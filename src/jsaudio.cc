@@ -180,8 +180,10 @@ NAN_METHOD(openStream) {
   // Prepare in / out params
   LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
   LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut = LocObjToPaStreamParameters(objOutput);
+  PaStreamParameters paramsIn;
+  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
+  PaStreamParameters paramsOut;
+  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
   // Get stream options
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
   unsigned long framesPerBuffer = LocalizeULong(
@@ -191,8 +193,8 @@ NAN_METHOD(openStream) {
   // Start stream
   PaError err = Pa_OpenStream(
     stream->streamPtrRef(),
-    &paramsIn,
-    &paramsOut,
+    objInput->IsNull() ? NULL : &paramsIn,
+    objOutput->IsNull() ? NULL : &paramsOut,
     sampleRate,
     framesPerBuffer,
     streamFlags,
