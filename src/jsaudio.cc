@@ -141,11 +141,17 @@ NAN_METHOD(isFormatSupported) {
   // Prepare params
   LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
   LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut = LocObjToPaStreamParameters(objOutput);
+  PaStreamParameters paramsIn;
+  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
+  PaStreamParameters paramsOut;
+  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
   // Start stream
-  PaError err = Pa_IsFormatSupported(&paramsIn, &paramsOut, sampleRate);
+  PaError err = Pa_IsFormatSupported(
+    objInput->IsNull() ? NULL : &paramsIn,
+    objOutput->IsNull() ? NULL : &paramsOut,
+    sampleRate
+  );
   if (err == paFormatIsSupported) return info.GetReturnValue().Set(true);
   info.GetReturnValue().Set(false);
 }
@@ -158,11 +164,17 @@ NAN_METHOD(whyIsFormatUnsupported) {
   // Prepare params
   LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
   LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut = LocObjToPaStreamParameters(objOutput);
+  PaStreamParameters paramsIn;
+  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
+  PaStreamParameters paramsOut;
+  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
   // Start stream
-  PaError err = Pa_IsFormatSupported(&paramsIn, &paramsOut, sampleRate);
+  PaError err = Pa_IsFormatSupported(
+    objInput->IsNull() ? NULL : &paramsIn,
+    objOutput->IsNull() ? NULL : &paramsOut,
+    sampleRate
+  );
   const char* errText = Pa_GetErrorText(err);
   if (err == paFormatIsSupported || errText == NULL) {
     return info.GetReturnValue().Set(ToLocString("Supported"));
@@ -184,6 +196,7 @@ NAN_METHOD(openStream) {
   if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
   PaStreamParameters paramsOut;
   if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
+
   // Get stream options
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
   unsigned long framesPerBuffer = LocalizeULong(
