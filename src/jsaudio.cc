@@ -139,17 +139,15 @@ NAN_METHOD(isFormatSupported) {
   // Get params objects
   LocalObject obj = info[0]->ToObject();
   // Prepare params
-  LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
-  LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn;
-  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut;
-  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
+  bool hasInput, hasOutput;
+  PaStreamParameters paramsIn, paramsOut;
+  LocObjToPaInputOutputPaStreamParameters(obj, &paramsIn, &paramsOut, &hasInput, &hasOutput);
+
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
   // Start stream
   PaError err = Pa_IsFormatSupported(
-    objInput->IsNull() ? NULL : &paramsIn,
-    objOutput->IsNull() ? NULL : &paramsOut,
+    hasInput ? &paramsIn : NULL,
+    hasOutput ? &paramsOut : NULL,
     sampleRate
   );
   if (err == paFormatIsSupported) return info.GetReturnValue().Set(true);
@@ -162,17 +160,15 @@ NAN_METHOD(whyIsFormatUnsupported) {
   // Get params objects
   LocalObject obj = info[0]->ToObject();
   // Prepare params
-  LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
-  LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn;
-  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut;
-  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
+  bool hasInput, hasOutput;
+  PaStreamParameters paramsIn, paramsOut;
+  LocObjToPaInputOutputPaStreamParameters(obj, &paramsIn, &paramsOut, &hasInput, &hasOutput);
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
+
   // Start stream
   PaError err = Pa_IsFormatSupported(
-    objInput->IsNull() ? NULL : &paramsIn,
-    objOutput->IsNull() ? NULL : &paramsOut,
+    hasInput ? &paramsIn : NULL,
+    hasOutput ? &paramsOut : NULL,
     sampleRate
   );
   const char* errText = Pa_GetErrorText(err);
@@ -190,12 +186,9 @@ NAN_METHOD(openStream) {
   JsPaStream* stream = ObjectWrap::Unwrap<JsPaStream>(
     ToLocObject(Get(obj, ToLocString("stream"))));
   // Prepare in / out params
-  LocalObject objInput = ToLocObject(Get(obj, ToLocString("input")));
-  LocalObject objOutput = ToLocObject(Get(obj, ToLocString("output")));
-  PaStreamParameters paramsIn;
-  if (!objInput->IsNull()) paramsIn = LocObjToPaStreamParameters(objInput);
-  PaStreamParameters paramsOut;
-  if (!objOutput->IsNull()) paramsOut = LocObjToPaStreamParameters(objOutput);
+  bool hasInput, hasOutput;
+  PaStreamParameters paramsIn, paramsOut;
+  LocObjToPaInputOutputPaStreamParameters(obj, &paramsIn, &paramsOut, &hasInput, &hasOutput);
 
   // Get stream options
   double sampleRate = LocalizeDouble(Get(obj, ToLocString("sampleRate")));
@@ -206,8 +199,8 @@ NAN_METHOD(openStream) {
   // Start stream
   PaError err = Pa_OpenStream(
     stream->streamPtrRef(),
-    objInput->IsNull() ? NULL : &paramsIn,
-    objOutput->IsNull() ? NULL : &paramsOut,
+    hasInput ? &paramsIn : NULL,
+    hasOutput ? &paramsOut : NULL,
     sampleRate,
     framesPerBuffer,
     streamFlags,

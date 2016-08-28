@@ -108,3 +108,26 @@ PaStreamParameters LocObjToPaStreamParameters (LocalObject obj) {
   };
   return params;
 }
+
+bool LocObjToPaStreamParameters(LocalObject obj, const char * key, PaStreamParameters * params) {
+  LocalValue val = Get(obj, ToLocString(key)).ToLocalChecked();
+
+  bool isObject = val->IsObject();
+
+  if (isObject) {
+    *params = LocObjToPaStreamParameters(ToLocObject(val->ToObject()));
+  }
+
+  return isObject;
+}
+
+void LocObjToPaInputOutputPaStreamParameters (
+  LocalObject obj,
+  PaStreamParameters * input,
+  PaStreamParameters * output,
+  bool * hasInput,
+  bool * hasOutput
+) {
+  *hasInput = LocObjToPaStreamParameters(obj, "input", input);
+  *hasOutput = LocObjToPaStreamParameters(obj, "output", output);
+}
